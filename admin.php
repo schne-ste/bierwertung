@@ -31,6 +31,7 @@ if (isset($_POST['adjust_group'], $_POST['adjust_type'], $_POST['adjust_amount']
             )");
         $stmt->execute([$group_id, $amount]);
     }
+    
 }
 
 // Gruppe löschen
@@ -48,6 +49,12 @@ $groups = $db->query("
     GROUP BY g.id
     ORDER BY g.name ASC
 ")->fetchAll();
+
+// Alle Punkte zurücksetzen (Scores löschen, Gruppen bleiben)
+if (isset($_POST['reset_scores'])) {
+    $db->exec("DELETE FROM scores");
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -158,6 +165,30 @@ $groups = $db->query("
     </form>
 </div>
 <?php endforeach; ?>
+<h2>Punkte zurücksetzen</h2>
+<form method="post" onsubmit="return confirm('Alle Punkte löschen – Sicher?')">
+    <button name="reset_scores" class="delete-button">Alle Punkte löschen</button>
+</form>
+<script>
+window.addEventListener('load', () => {
+    const scrollPos = sessionStorage.getItem('scrollPos');
+    if (scrollPos !== null) {
+        window.scrollTo(0, parseInt(scrollPos));
+        sessionStorage.removeItem('scrollPos');
+    }
+    
+    // Standardwert setzen
+    document.querySelectorAll('input[name="adjust_amount"]').forEach(input => {
+        input.value = 1;
+    });
 
+    // Scroll-Position speichern vor Formular-Abschicken
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', () => {
+            sessionStorage.setItem('scrollPos', window.scrollY);
+        });
+    });
+});
+</script>
 </body>
 </html>
